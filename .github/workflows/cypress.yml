@@ -38,10 +38,11 @@ jobs:
 
       - name: Run Cypress (headless, JUnit reporter for CI)
         run: |
-          npx cypress run --headless --browser chrome \
-            --no-sandbox --disable-dev-shm-usage \
+            npx cypress run --headless --browser chrome \
             --reporter junit \
             --reporter-options mochaFile=cypress/results/junit-[hash].xml
+        env:
+            CYPRESS_RUN_BINARY_ARGS: "--no-sandbox --disable-dev-shm-usage"
 
       - name: Upload screenshots
         if: always()
