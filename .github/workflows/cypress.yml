@@ -31,9 +31,17 @@ jobs:
       - name: Install Cypress binary
         run: npx cypress install
 
+      - name: Install Chrome dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-0 libxss1 libasound2 libnss3 libgbm1 fonts-liberation
+
       - name: Run Cypress (headless, JUnit reporter for CI)
-        run: npm run cypress:run:ci
-        # fail the job if tests fail (default behavior)
+        run: |
+          npx cypress run --headless --browser chrome \
+            --no-sandbox --disable-dev-shm-usage \
+            --reporter junit \
+            --reporter-options mochaFile=cypress/results/junit-[hash].xml
 
       - name: Upload screenshots
         if: always()
