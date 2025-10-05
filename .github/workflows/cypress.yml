@@ -2,7 +2,7 @@ name: Cypress E2E Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -10,17 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # 3️⃣ Cache npm
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -29,31 +26,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # 4️⃣ Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 5️⃣ Install Cypress binary
-      - name: Install Cypress binary
-        run: npx cypress install
-
-      # 6️⃣ Install Chrome dependencies (for headless Linux)
-      - name: Install Chrome dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-0 libxss1 libnss3 libgbm1 fonts-liberation
-
-      # 7️⃣ Run Cypress tests headless (with JUnit reporter for CI)
-      - name: Run Cypress (headless)
-        run: |
-          npx cypress run --headless --browser chrome \
-            --reporter junit \
-            --reporter-options "mochaFile=cypress/results/junit-[hash].xml"
+      # Run Cypress using official GitHub Action
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          headless: true
+          record: false
+          reporter: junit
+          reporter-options: mochaFile=cypress/results/junit-[hash].xml
         env:
-          # Chrome flags for headless Linux
+          # Chrome flags for headless CI
+          # These prevent sandbox and shared memory errors
           CYPRESS_RUN_BINARY_ARGS: "--no-sandbox --disable-dev-shm-usage"
 
-      # 8️⃣ Upload screenshots if any test fails
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -61,7 +50,6 @@ jobs:
           name: cypress-screenshots
           path: cypress/screenshots
 
-      # 9️⃣ Upload videos
       - name: Upload videos
         if: always()
         uses: actions/upload-artifact@v4
@@ -69,8 +57,7 @@ jobs:
           name: cypress-videos
           path: cypress/videos
 
-      # 🔟 Upload JUnit results
-      - name: Upload junit results
+      - name: Upload JUnit results
         if: always()
         uses: actions/upload-artifact@v4
         with:
